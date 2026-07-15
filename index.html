@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Angle Frames Chitty 2026 - Pro Edition</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root { 
+            --primary: #1a1a1a; 
+            --accent: #ff4757; 
+            --bg: #f4f7f6; 
+            --success: #2ecc71; 
+            --gold: #f1c40f; 
+            --blue: #3498db; 
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 10px; margin: 0; min-height: 100vh; overflow-x: hidden; padding-bottom: 60px; }
+        
+        .header { text-align: center; margin-bottom: 30px; position: relative; width: 100%; max-width: 800px; }
+        .main-heading { font-size: clamp(24px, 5vw, 48px); font-weight: 950; color: var(--primary); margin: 0; letter-spacing: -2px; text-transform: uppercase; }
+        
+        .meta-container { display: flex; gap: 15px; justify-content: center; margin-top: 15px; flex-wrap: wrap; }
+        .data-pill { font-size: 14px; color: #1a1a1a; font-weight: 800; padding: 8px 24px; border-radius: 100px; background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid rgba(241, 196, 15, 0.3); display: flex; align-items: center; gap: 8px; letter-spacing: 0.5px; }
+        .data-pill span { color: var(--accent); font-weight: 900; }
+
+        .main-layout { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            width: 98%; 
+            max-width: 1600px; 
+            margin-top: 20px;
+            gap: 20px;
+        }
+
+        @media (max-width: 1100px) {
+            .main-layout { flex-direction: column; align-items: center; }
+            .sidebar, .control-sidebar { width: 100% !important; max-width: 400px; }
+            .wheel-container { order: -1; width: 100%; }
+            #wheel-wrapper { width: min(90vw, 500px) !important; height: min(90vw, 500px) !important; }
+        }
+        
+        .nav-buttons { position: fixed; right: 20px; top: 20px; display: flex; flex-direction: column; gap: 10px; z-index: 1100; }
+        .side-btn-trigger { background: white; border: 2px solid #eee; padding: 10px 18px; border-radius: 12px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 140px; text-align: left; }
+
+        .panel-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.2); backdrop-filter: blur(2px); z-index: 1200; display: none; justify-content: flex-end; }
+        .panel-overlay.active { display: flex; }
+        
+        .panel-card { width: 350px; height: 100vh; padding: 30px; background: white; box-shadow: -10px 0 30px rgba(0,0,0,0.1); overflow-y: auto; box-sizing: border-box; }
+
+        .wheel-container { display: flex; justify-content: center; align-items: center; flex-grow: 1; position: relative; }
+        #wheel-wrapper { position: relative; width: 700px; height: 700px; display: flex; align-items: center; justify-content: center; transition: width 0.3s, height 0.3s; }
+        #wheel-outer-frame { width: 100%; height: 100%; background: white; padding: 10px; border-radius: 50%; box-shadow: 0 40px 80px rgba(0,0,0,0.15); border: 12px solid #fff; box-sizing: border-box; }
+        
+        #pointer { position: absolute; top: 50%; right: -15px; transform: translateY(-50%); width: 80px; height: 40px; z-index: 300; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3)); }
+        #pointer-shape { width: 100%; height: 100%; clip-path: polygon(0% 50%, 100% 0%, 85% 50%, 100% 100%); background: linear-gradient(90deg, #ff4757 0%, #ff6b81 100%); }
+
+        canvas#wheelCanvas { width: 100%; height: 100%; border-radius: 50%; transition: transform 8s cubic-bezier(0.15, 0, 0.15, 1); }
+        .idle-spin { animation: idleRotation 60s linear infinite; }
+        @keyframes idleRotation { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        .wheel-center-hub { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 20%; height: 20%; max-width: 140px; max-height: 140px; background: white; border-radius: 50%; z-index: 160; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(0,0,0,0.2); border: 5px solid #eee; }
+        .hub-text { font-size: clamp(10px, 2vw, 16px); font-weight: 900; color: #1a1a1a; text-align: center; text-transform: uppercase; }
+
+        .sidebar { display: flex; flex-direction: column; gap: 15px; width: 350px; }
+        .control-sidebar { width: 350px; display: flex; justify-content: center; align-items: center; }
+
+        .card { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); position: relative; overflow: hidden; }
+        
+        .history-container {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(15px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 24px;
+            padding: 20px;
+        }
+        .winners-list { list-style: none; padding: 0; margin: 0; font-size: 14px; }
+        .winners-list li { 
+            background: rgba(255, 255, 255, 0.7);
+            padding: 12px 18px; 
+            border-radius: 16px; 
+            margin-bottom: 10px; 
+            font-weight: 800; 
+            display: flex; 
+            flex-direction: column;
+            gap: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        }
+        .winners-list li .row { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+
+        textarea { width: 100%; height: 140px; padding: 10px; border: 1px solid #eee; border-radius: 12px; resize: none; font-weight: bold; background: #fafafa; box-sizing: border-box; }
+        .spin-btn { width: 280px; padding: 25px; background: var(--accent); color: white; border: none; border-radius: 100px; font-size: 24px; font-weight: 900; cursor: pointer; transition: 0.3s; box-shadow: 0 10px 30px rgba(255, 71, 87, 0.3); }
+        .spin-btn:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(255, 71, 87, 0.4); }
+        .spin-btn:disabled { background: #ccc; box-shadow: none; cursor: not-allowed; }
+
+        #modal { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); backdrop-filter: blur(12px); display:none; justify-content:center; align-items:center; z-index: 2000; padding: 20px; }
+        .modal-capture-area { background: white; padding: 40px; border-radius: 40px; text-align: center; width: 100%; max-width: 450px; box-sizing: border-box; }
+        
+        #winner-display-name { 
+            font-size: clamp(40px, 10vw, 85px); font-weight: 950; margin: 10px 0; text-transform: uppercase;
+            background: linear-gradient(110deg, #ff4757 20%, #ffffff 40%, #ff4757 60%);
+            background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            animation: lightLeak 3s linear infinite;
+        }
+
+        .footer-ticker { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--primary); color: white; height: 45px; display: flex; align-items: center; z-index: 3000; overflow: hidden; border-top: 3px solid var(--accent); }
+        .ticker-label { background: var(--accent); padding: 0 20px; height: 100%; display: flex; align-items: center; font-weight: 950; font-size: 14px; z-index: 3005; white-space: nowrap; }
+        .ticker-move { display: inline-block; white-space: nowrap; animation: tickerScroll 25s linear infinite; }
+        .ticker-item { display: inline-block; padding: 0 30px; font-weight: 800; font-size: 15px; color: #ddd; }
+        @keyframes tickerScroll { 0% { transform: translateX(100vw); } 100% { transform: translateX(-100%); } }
+
+        .sound-center { margin-top: 20px; padding-top: 20px; border-top: 2px dashed #eee; }
+        .sound-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+        .toggle-switch { position: relative; width: 50px; height: 24px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--success); }
+        input:checked + .slider:before { transform: translateX(24px); }
+
+        .download-icon { cursor: pointer; padding: 8px; border-radius: 50%; transition: 0.2s; display: flex; align-items: center; justify-content: center; background: #f8f9fa; border: 1px solid #eee; }
+        .download-icon:hover { background: #e9ecef; transform: scale(1.1); }
+    </style>
+</head>
+<body>
+
+    <div class="nav-buttons">
+        <button class="side-btn-trigger" onclick="togglePanel('settings-overlay', true)">⚙️ SETTINGS</button>
+        <button class="side-btn-trigger" onclick="fetchFromSheet()" style="background:#2ecc71; color:white; border:none;">🔄 SYNC SHEET</button>
+    </div>
+
+    <div class="header">
+        <h1 class="main-heading">ANGLE FRAMES CHITTY 2026</h1>
+        <div class="meta-container">
+            <div class="data-pill">📅 DATE: <span id="lotDateDisp">15/05/2026</span></div>
+            <div class="data-pill">💰 AMOUNT: <span id="chittyAmountDisp">1000</span></div>
+        </div>
+    </div>
+
+    <div class="main-layout">
+        <div class="sidebar">
+            <div class="card history-container" id="captureHistory" style="height: 400px; overflow-y: auto;">
+                <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h2 style="font-size: 18px; margin:0; color: #333;">WINNERS HISTORY</h2>
+                    <div class="download-icon" title="Download as Image" onclick="downloadWinners()">📸</div>
+                </div>
+                <ul id="winnersList" class="winners-list"></ul>
+            </div>
+        </div>
+
+        <div class="wheel-container">
+            <div id="wheel-wrapper">
+                <div id="wheel-outer-frame">
+                    <div id="pointer"><div id="pointer-shape"></div></div>
+                    <canvas id="wheelCanvas" width="1400" height="1400" class="idle-spin"></canvas>
+                </div>
+                <div class="wheel-center-hub"><div class="hub-text">ANGLE<br><span style="color:var(--accent)">FRAMES</span></div></div>
+            </div>
+        </div>
+        
+        <div class="control-sidebar">
+            <button class="spin-btn" id="spinBtn" onclick="prepareAndSpin()">SPIN WHEEL</button>
+        </div>
+    </div>
+
+    <div class="footer-ticker">
+        <div class="ticker-label">LATEST WINNERS</div>
+        <div class="ticker-wrap" style="flex:1;">
+            <div class="ticker-move" id="tickerContent">
+                <div class="ticker-item">Awaiting first spin...</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="settings-overlay" class="panel-overlay">
+        <div class="panel-card">
+            <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <span style="font-weight:950; font-size:22px;">SETTINGS</span>
+                <button onclick="togglePanel('settings-overlay', false)" style="background:none; border:none; font-size:20px; cursor:pointer;">✕</button>
+            </div>
+            <textarea id="namesInput" readonly style="background:#eee; cursor:not-allowed;">Sync names from sheet...</textarea>
+            
+            <div style="margin-top:15px;">
+                <label style="font-weight:900; font-size:11px; color:#888;">CHITTY AMOUNT (SELECT COLUMN)</label>
+                <select id="chittyAmountInput" style="width:100%; padding:10px; border:1px solid #eee; border-radius:8px;" onchange="syncSettings(); fetchFromSheet();">
+                    <option value="1000">1000 (Column A)</option>
+                    <option value="3000">3000 (Column C)</option>
+                </select>
+            </div>
+
+            <div style="margin-top:15px;">
+                <label style="font-weight:900; font-size:11px; color:#888;">LOT DATE</label>
+                <input type="text" id="lotDateInput" style="width:100%; padding:10px; border:1px solid #eee; border-radius:8px;" value="15/05/2026" oninput="syncSettings()">
+            </div>
+
+            <div class="sound-center">
+                <label style="font-weight:950; font-size:12px; color:var(--primary); letter-spacing: 1px;">AUDIO CONTROL CENTER</label>
+                <div class="sound-row" style="margin-top: 15px;">
+                    <span style="font-size:13px; font-weight:800;">Enable Sounds</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="soundToggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="sound-row">
+                    <span style="font-size:13px; font-weight:800;">Sound Profile</span>
+                    <select id="soundProfile" style="padding:5px; border-radius:5px; border:1px solid #eee; font-weight:bold;">
+                        <option value="classic">Classic Chimes</option>
+                        <option value="arcade">Modern Arcade</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="spin-btn" style="width:100%; margin-top:20px;" onclick="togglePanel('settings-overlay', false)">CLOSE</button>
+        </div>
+    </div>
+
+    <div id="modal">
+        <div style="display:flex; flex-direction:column; align-items:center;">
+            <div id="singleWinnerCard" class="modal-capture-area">
+                <div style="font-weight:900; letter-spacing:2px;">✨ CONGRATULATIONS! ✨</div>
+                <h1 id="winner-display-name"></h1>
+                <span id="prize-display" style="font-size:24px; color:var(--success); font-weight:900;"></span>
+            </div>
+            <button class="spin-btn" style="width:250px; margin-top:20px;" onclick="closeAndRemove()">CONFIRM & SYNC SHEET</button>
+        </div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyAnERhnmgJ5IHrUJhq75b_RN0r14_kYO4whZi2IFHjj65aItO5wiLMsq_NLzkt0Af1/exec";
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const canvas = document.getElementById('wheelCanvas');
+        const ctx = canvas.getContext('2d');
+        const namesInput = document.getElementById('namesInput');
+        const spinBtn = document.getElementById('spinBtn');
+        const winnersListUI = document.getElementById('winnersList');
+        const tickerContent = document.getElementById('tickerContent');
+        const soundToggle = document.getElementById('soundToggle');
+        const soundProfile = document.getElementById('soundProfile');
+        
+        let currentRotation = 0;
+        let isSpinning = false;
+        let lastWinner = null;
+        let lastPrize = "";
+        const colors = ['#1abc9c', '#3498db', '#9b59b6', '#f1c40f', '#e67e22', '#e74c3c', '#2ecc71', '#34495e'];
+
+        async function fetchFromSheet() {
+            const amount = document.getElementById('chittyAmountInput').value;
+            try {
+                const response = await fetch(`${SCRIPT_URL}?amount=${amount}`);
+                const names = await response.json();
+                namesInput.value = names.join('\n');
+                drawWheel();
+            } catch (e) { console.error("Sync Error", e); }
+        }
+
+        async function updateSheetStatus(name) {
+            const amount = document.getElementById('chittyAmountInput').value;
+            try {
+                await fetch(SCRIPT_URL, { 
+                    method: 'POST', 
+                    body: JSON.stringify({ name: name, amount: amount }), 
+                    mode: 'no-cors' 
+                });
+            } catch (e) { console.error("Update Error", e); }
+        }
+
+        function downloadWinners() {
+            const container = document.getElementById('captureHistory');
+            html2canvas(container, {
+                backgroundColor: "#f4f7f6",
+                scale: 2,
+                logging: false
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `Angle-Frames-Winners-${new Date().toLocaleDateString()}.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+            });
+        }
+
+        function announceWinner(name, prize) {
+            if (!soundToggle.checked) return;
+            const msg = new SpeechSynthesisUtterance();
+            msg.text = `Congratulations ${name}! You have won ${prize} rupees.`;
+            msg.rate = 0.9;
+            msg.pitch = 1.1;
+            window.speechSynthesis.speak(msg);
+        }
+
+        function syncSettings() {
+            document.getElementById('lotDateDisp').innerText = document.getElementById('lotDateInput').value;
+            document.getElementById('chittyAmountDisp').innerText = document.getElementById('chittyAmountInput').value;
+        }
+
+        function playTone(freq, type, dur, vol = 0.1) {
+            if (!soundToggle.checked) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + dur);
+        }
+
+        function playWinFanfare() {
+            if (soundProfile.value === 'classic') {
+                [261, 329, 392, 523].forEach((f, i) => setTimeout(() => playTone(f, 'triangle', 0.6), i * 150));
+            } else {
+                [440, 554, 659, 880].forEach((f, i) => setTimeout(() => playTone(f, 'square', 0.4, 0.05), i * 100));
+            }
+        }
+
+        function drawWheel() {
+            const names = namesInput.value.split('\n').map(n => n.trim()).filter(n => n !== "");
+            const segments = names.length;
+            if (segments === 0) { ctx.clearRect(0, 0, 1400, 1400); return; }
+            const angleStep = (Math.PI * 2) / segments;
+            ctx.clearRect(0, 0, 1400, 1400);
+            names.forEach((name, i) => {
+                ctx.save();
+                ctx.beginPath(); ctx.moveTo(700, 700);
+                ctx.arc(700, 700, 680, i * angleStep, (i + 1) * angleStep);
+                ctx.fillStyle = colors[i % colors.length]; ctx.fill();
+                ctx.translate(700, 700); ctx.rotate(i * angleStep + angleStep / 2);
+                ctx.textAlign = "right"; ctx.fillStyle = "white"; ctx.font = "bold 34px Inter";
+                ctx.fillText(name.toUpperCase(), 620, 12); ctx.restore();
+            });
+        }
+
+        function prepareAndSpin() {
+            if (isSpinning) return;
+            const names = namesInput.value.split('\n').map(n => n.trim()).filter(n => n !== "");
+            if (names.length === 0) return;
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            canvas.classList.remove('idle-spin');
+            isSpinning = true;
+            spinBtn.disabled = true;
+            
+            const randomSpin = Math.floor(Math.random() * 360) + 7200; 
+            currentRotation += randomSpin;
+            canvas.style.transform = `rotate(${currentRotation}deg)`;
+
+            for(let i=0; i<40; i++) {
+                setTimeout(() => { if (isSpinning) playTone(800 + (i*10), 'sine', 0.05, 0.02); }, i * (8100/40));
+            }
+
+            setTimeout(() => {
+                const winningIndex = Math.floor(((360 - (currentRotation % 360)) % 360) / (360 / names.length));
+                finishSpin(names[winningIndex]);
+            }, 8100);
+        }
+
+        function finishSpin(winner) {
+            lastWinner = winner;
+            const rawAmount = parseInt(document.getElementById('chittyAmountInput').value);
+            lastPrize = (rawAmount * 10).toLocaleString();
+            playWinFanfare();
+            announceWinner(winner, lastPrize);
+            document.getElementById('winner-display-name').innerText = winner;
+            document.getElementById('prize-display').innerText = `🏆 WON RS ${lastPrize}`;
+            document.getElementById('modal').style.display = 'flex';
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, zIndex: 3000 });
+            const li = document.createElement('li');
+            li.innerHTML = `<div class="row"><span>${winner}</span><span style="color:var(--success)">Rs ${lastPrize}</span></div>`;
+            winnersListUI.prepend(li);
+            isSpinning = false;
+        }
+
+        function closeAndRemove() {
+            updateSheetStatus(lastWinner);
+            if (tickerContent.innerText.includes("Awaiting")) tickerContent.innerHTML = "";
+            const tickerItem = document.createElement('div');
+            tickerItem.className = 'ticker-item';
+            tickerItem.innerHTML = `🏆 ${lastWinner} WON <span>RS ${lastPrize}</span> •`;
+            tickerContent.appendChild(tickerItem);
+            document.getElementById('modal').style.display = 'none';
+            const updatedNames = namesInput.value.split('\n').map(n => n.trim()).filter(n => n !== "" && n !== lastWinner);
+            namesInput.value = updatedNames.join('\n');
+            drawWheel();
+            spinBtn.disabled = false;
+            canvas.classList.add('idle-spin');
+        }
+
+        function togglePanel(id, show) {
+            document.getElementById(id).style.display = show ? 'flex' : 'none';
+        }
+
+        window.onload = () => { fetchFromSheet(); drawWheel(); };
+    </script>
+</body>
+</html>
