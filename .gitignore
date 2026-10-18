@@ -1,0 +1,6 @@
+# Live data: database, recordings, admin PIN — never commit
+data/
+.DS_Store
+.claude/
+node_modules/
+*.log

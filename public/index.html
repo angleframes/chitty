@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>ANGLE FRAMES CHITTY · Live Draw</title>
+  <meta name="theme-color" content="#0a0a0a">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a0a0a'/%3E%3Ctext x='32' y='38' text-anchor='middle' font-family='Arial Black,Arial' font-weight='900' font-size='26' fill='%23fff'%3EAF%3C/text%3E%3Crect x='14' y='45' width='36' height='5' fill='%23b3141b'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/app.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img class="brand-logo" src="/logo.png" alt="Angle Frames — Experience the magic">
+      <span class="brand-divider" aria-hidden="true"></span>
+      <div class="brand-text">
+        <h1><span class="sr-only">ANGLE FRAMES </span>CHITTY</h1>
+        <p>Live draw</p>
+      </div>
+    </div>
+    <div class="clock-block">
+      <div class="clock" id="clock">--:--:--</div>
+      <div class="clock-meta"><span id="today">—</span> · IST</div>
+    </div>
+    <div class="top-actions">
+      <span class="live-dot" id="liveDot"><i></i><span>Live</span></span>
+      <button class="icon-btn" id="soundBtn" aria-label="Toggle sound" aria-pressed="true">
+        <svg viewBox="0 0 24 24" class="ico"><path d="M4 9v6h4l5 4V5L8 9H4z" stroke="none"/><path class="wave" d="M16 8.5a4.5 4.5 0 0 1 0 7M18.5 6a8 8 0 0 1 0 12" fill="none"/></svg>
+      </button>
+      <button class="btn ghost sm" id="adminBtn">Admin</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="stage">
+      <div class="stage-head">
+        <div class="picker" id="catPicker">
+          <span class="label">Chitty category</span>
+          <button class="picker-btn" id="catPickerBtn" aria-haspopup="listbox" aria-expanded="false">
+            <span class="picker-value" id="catPickerValue">—</span>
+            <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none"/></svg>
+          </button>
+          <ul class="picker-menu" id="catPickerMenu" role="listbox" hidden></ul>
+        </div>
+        <div class="stage-badges">
+          <span class="rec-badge" id="recBadge" hidden><i></i>REC <span id="recBadgeTime">00:00</span></span>
+          <button class="rec-btn" id="recBtn" hidden><i></i><span id="recBtnLabel">Record</span></button>
+          <span class="badge" id="cycleBadge">Cycle 1</span>
+          <span class="status" id="statusPill" data-status="ready"><i></i><span>Ready</span></span>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><span class="stat-label">Amount</span><span class="stat-value" id="statAmount">—</span></div>
+        <div class="stat"><span class="stat-label">Participants</span><span class="stat-value" id="statTotal">0</span></div>
+        <div class="stat"><span class="stat-label">Remaining</span><span class="stat-value accent" id="statRemaining">0</span></div>
+        <div class="stat"><span class="stat-label">Winners</span><span class="stat-value" id="statWinners">0</span></div>
+      </div>
+
+      <div class="wheel-area">
+        <div class="wheel-box">
+        <div class="wheel-wrap" id="wheelWrap">
+          <canvas id="wheel" aria-label="Spinning draw wheel" role="img"></canvas>
+          <div class="pointer" aria-hidden="true">
+            <svg viewBox="0 0 40 52"><path d="M20 50 L3 14 A17 17 0 1 1 37 14 Z" fill="#b3141b"/><circle cx="20" cy="17" r="6" fill="#fff"/></svg>
+          </div>
+          <div class="hub" aria-hidden="true"><img src="/logo-mark.png" alt=""></div>
+          <div class="wheel-empty" id="wheelEmpty" hidden></div>
+        </div>
+        </div>
+        <div class="spin-row">
+          <button class="spin-btn" id="spinBtn" disabled><span class="spin-label">START SPIN</span></button>
+          <p class="spin-hint" id="spinHint">&nbsp;</p>
+        </div>
+      </div>
+    </section>
+
+    <aside class="side">
+      <section class="panel current" id="currentCard">
+        <div class="panel-head"><h2>Current winner</h2><span class="panel-meta" id="currentMeta"></span></div>
+        <div class="current-body" id="currentBody"></div>
+      </section>
+
+      <section class="panel list-panel">
+        <div class="panel-head"><h2>Previous spin winners</h2><div class="head-r"><button class="share-btn" data-share="previous" hidden><svg viewBox="0 0 24 24" class="ico"><path d="M12 15V4M8 8l4-4 4 4M5 13v6h14v-6" fill="none"/></svg><span>Share</span></button><span class="count" id="prevCount">0</span></div></div>
+        <p class="panel-sub" id="prevSub">Active category · current draw cycle</p>
+        <ol class="winner-list" id="prevList"></ol>
+      </section>
+
+      <section class="panel list-panel">
+        <div class="panel-head"><h2>Today's winners</h2><div class="head-r"><button class="share-btn" data-share="today" hidden><svg viewBox="0 0 24 24" class="ico"><path d="M12 15V4M8 8l4-4 4 4M5 13v6h14v-6" fill="none"/></svg><span>Share</span></button><span class="count" id="todayCount">0</span></div></div>
+        <p class="panel-sub">All categories · <span id="todayLabel"></span></p>
+        <ol class="winner-list" id="todayList"></ol>
+      </section>
+
+      <p class="side-foot">
+        <svg viewBox="0 0 24 24" class="ico"><path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6l7-3z" fill="none"/><path d="M9 12l2 2 4-4" fill="none"/></svg>
+        <span>Winners selected server-side with a secure random generator. Every draw is recorded permanently.</span>
+      </p>
+    </aside>
+  </main>
+
+  <!-- Winner celebration -->
+  <div class="overlay celebrate" id="celebrate" hidden>
+    <canvas id="confetti"></canvas>
+    <div class="sheet celebrate-card" role="dialog" aria-modal="true" aria-labelledby="celebrateName">
+      <p class="eyebrow"><span class="bar"></span>Winner · <span id="celebrateDraw"></span></p>
+      <h3 id="celebrateName"></h3>
+      <p class="celebrate-uid" id="celebrateUid"></p>
+      <p class="celebrate-cat" id="celebrateCat"></p>
+      <button class="btn primary" id="celebrateClose">Continue</button>
+    </div>
+  </div>
+
+  <!-- Admin login -->
+  <div class="overlay" id="loginModal" hidden>
+    <div class="sheet modal" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+      <h3 id="loginTitle">Admin access</h3>
+      <p class="muted">Enter the admin PIN to manage the draw.</p>
+      <input type="text" id="pinInput" class="pin" inputmode="numeric" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="••••••" maxlength="12">
+      <p class="form-error" id="loginError"></p>
+      <div class="modal-actions">
+        <button class="btn ghost" id="loginCancel">Cancel</button>
+        <button class="btn primary" id="loginSubmit">Sign in</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm -->
+  <div class="overlay" id="confirmModal" hidden>
+    <div class="sheet modal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+      <h3 id="confirmTitle">Are you sure?</h3>
+      <p class="muted" id="confirmText"></p>
+      <div class="modal-actions">
+        <button class="btn ghost" id="confirmCancel">Cancel</button>
+        <button class="btn primary" id="confirmOk">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin drawer -->
+  <div class="drawer-backdrop" id="drawerBackdrop" hidden></div>
+  <aside class="drawer" id="drawer" aria-label="Admin panel" aria-hidden="true">
+    <div class="drawer-head">
+      <div class="drawer-id">
+        <p class="eyebrow"><span class="bar"></span>Admin</p>
+        <h2 id="drawerTitle">Manage draw</h2>
+      </div>
+      <div class="drawer-head-actions">
+        <button class="btn ghost sm" id="logoutBtn">Sign out</button>
+        <button class="icon-btn" id="drawerClose" aria-label="Close admin panel">
+          <svg viewBox="0 0 24 24" class="ico"><path d="M6 6l12 12M18 6L6 18" fill="none"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="drawer-cats" id="drawerCats" aria-label="Chitty category"></div>
+    <nav class="tabs" role="tablist">
+      <button role="tab" class="tab active" data-tab="participants"><svg viewBox="0 0 24 24" class="ico"><circle cx="9" cy="8" r="3.2" fill="none"/><path d="M3 19c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5M16 5.2a3 3 0 0 1 0 5.6M18 13.8c1.8.6 3 2.4 3 5.2" fill="none"/></svg><span>Participants</span><em class="tab-count" id="tcParticipants"></em></button>
+      <button role="tab" class="tab" data-tab="categories"><svg viewBox="0 0 24 24" class="ico"><rect x="4" y="4" width="7" height="7" rx="1.5" fill="none"/><rect x="13" y="4" width="7" height="7" rx="1.5" fill="none"/><rect x="4" y="13" width="7" height="7" rx="1.5" fill="none"/><rect x="13" y="13" width="7" height="7" rx="1.5" fill="none"/></svg><span>Categories</span><em class="tab-count" id="tcCategories"></em></button>
+      <button role="tab" class="tab" data-tab="cycle"><svg viewBox="0 0 24 24" class="ico"><circle cx="12" cy="12" r="8" fill="none"/><path d="M12 4v16M4 12h16M6.3 6.3l11.4 11.4M17.7 6.3L6.3 17.7" fill="none"/></svg><span>Draw</span><em class="tab-count" id="tcCycle"></em></button>
+      <button role="tab" class="tab" data-tab="recordings"><svg viewBox="0 0 24 24" class="ico"><rect x="3" y="6" width="13" height="12" rx="2" fill="none"/><path d="M16 10l5-3v10l-5-3z" fill="none"/></svg><span>Recordings</span></button>
+    </nav>
+
+    <div class="drawer-body">
+      <section class="tab-panel" data-panel="participants">
+        <div class="mini-stats">
+          <div><b id="psTotal">0</b><span>Participants</span></div>
+          <div><b id="psEligible" class="ok">0</b><span>Eligible</span></div>
+          <div><b id="psWon" class="red">0</b><span>Won this cycle</span></div>
+        </div>
+        <div class="block">
+          <label class="label" for="bulkNames">Add participants to <strong id="addTarget"></strong></label>
+          <textarea id="bulkNames" rows="3" spellcheck="false" autocomplete="off" placeholder="Paste or type names — one per line, or separated by commas"></textarea>
+          <div class="name-preview" id="bulkPreview" hidden></div>
+          <div class="row-between">
+            <span class="muted sm" id="bulkCount">Tip: paste a whole list at once<span class="kbd-tip"> · <kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>Enter</kbd> to add</span></span>
+            <button class="btn primary" id="addBtn">Add participants</button>
+          </div>
+        </div>
+        <div class="block">
+          <div class="row-between wrap list-tools">
+            <input type="text" id="pSearch" class="grow" placeholder="Search name or ID" autocomplete="off" spellcheck="false">
+            <div class="segmented" id="pFilter" role="radiogroup">
+              <button data-v="all" class="on">All</button>
+              <button data-v="eligible">Eligible</button>
+              <button data-v="won">Won</button>
+            </div>
+          </div>
+          <p class="muted sm" id="pSummary"></p>
+          <ul class="rows" id="pList"></ul>
+        </div>
+      </section>
+
+      <section class="tab-panel" data-panel="categories" hidden>
+        <div class="block">
+          <p class="label">New category</p>
+          <div class="inline-form">
+            <input id="catName" placeholder="Name (optional)" maxlength="60" autocomplete="off" spellcheck="false">
+            <div class="amount-input"><span>₹</span><input id="catAmount" type="text" inputmode="numeric" placeholder="Amount" autocomplete="off"></div>
+            <button class="btn primary" id="catCreate">Create</button>
+          </div>
+        </div>
+        <div class="block">
+          <p class="label">Categories</p>
+          <ul class="rows" id="catList"></ul>
+        </div>
+      </section>
+
+      <section class="tab-panel" data-panel="cycle" hidden>
+        <div class="block">
+          <p class="label">Current draw cycle · <span id="cycleCatName"></span></p>
+          <div class="cycle-now">
+            <div><span class="stat-label">Cycle</span><span class="stat-value" id="cycleNum">1</span></div>
+            <div><span class="stat-label">Winners</span><span class="stat-value" id="cycleWinners">0</span></div>
+            <div><span class="stat-label">Remaining</span><span class="stat-value" id="cycleRemaining">0</span></div>
+          </div>
+        </div>
+        <div class="block fresh">
+          <p class="label" style="margin:0">Clear all · Fresh start</p>
+          <p class="muted sm" style="margin:0">Clears the current winner, previous winners and today's winners, makes every participant eligible again and resets the wheel. Past results are archived in the cycle history below; participants, categories and recordings are kept.</p>
+          <div class="fresh-actions">
+            <button class="btn outline-red" id="resetOneBtn">Reset selected chitty</button>
+            <button class="btn danger" id="resetAllBtn">Clear all draws</button>
+          </div>
+        </div>
+        <div class="block">
+          <p class="label">Cycle history · archived results</p>
+          <ul class="rows" id="cycleList"></ul>
+        </div>
+      </section>
+
+      <section class="tab-panel" data-panel="recordings" hidden>
+        <div class="block">
+          <div class="row-between">
+            <div>
+              <p class="label" style="margin:0">Live draw recording</p>
+              <p class="muted sm" id="recPanelStatus" style="margin:2px 0 0">Not recording</p>
+            </div>
+            <button class="btn primary" id="recPanelBtn">Start recording</button>
+          </div>
+          <p class="note-warn" id="recLinkWarn" hidden></p>
+        </div>
+        <div class="block">
+          <div class="row-between wrap">
+            <p class="label" style="margin:0">Recording history</p>
+            <span class="muted sm" id="recCount"></span>
+          </div>
+          <div class="chips" id="recFilter"></div>
+          <div id="recList"></div>
+        </div>
+      </section>
+    </div>
+  </aside>
+
+  <!-- Share winners -->
+  <div class="overlay" id="shareModal" hidden>
+    <div class="sheet share-sheet" role="dialog" aria-modal="true" aria-labelledby="shareTitle">
+      <div class="share-head">
+        <div>
+          <p class="eyebrow"><span class="bar"></span>Share winners</p>
+          <h3 id="shareTitle">Winners report</h3>
+        </div>
+        <div class="share-head-r">
+          <span class="live-pill"><i></i>Live</span>
+          <button class="icon-btn" id="shareClose" aria-label="Close"><svg viewBox="0 0 24 24" class="ico"><path d="M6 6l12 12M18 6L6 18" fill="none"/></svg></button>
+        </div>
+      </div>
+      <div class="share-controls">
+        <div class="segmented wide" id="shareScope">
+          <button data-v="today">Today</button>
+          <button data-v="previous">Current cycle</button>
+          <button data-v="all">All winners</button>
+          <button data-v="history">History</button>
+        </div>
+        <div class="chips" id="shareCats"></div>
+        <div class="chips" id="shareCycles" hidden></div>
+      </div>
+      <div class="share-body">
+        <div class="share-preview" id="sharePreview"><img id="shareImg" alt="Winners report preview"></div>
+        <div class="share-side">
+          <p class="label" style="margin:0">WhatsApp message</p>
+          <pre class="share-text" id="shareText"></pre>
+          <p class="muted sm" id="shareNote">WhatsApp opens with this message ready — choose your group there and press send.</p>
+        </div>
+      </div>
+      <div class="share-actions">
+        <button class="btn wa-solid" id="shareWa">Share to WhatsApp</button>
+        <button class="btn" id="shareNative" hidden>Share image…</button>
+        <button class="btn" id="shareCopy">Copy winner details</button>
+        <button class="btn" id="sharePng">Download PNG</button>
+        <button class="btn" id="sharePdf">Download PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Clear all / fresh start -->
+  <div class="overlay" id="resetModal" hidden>
+    <div class="sheet modal reset-modal" role="dialog" aria-modal="true" aria-labelledby="resetTitle">
+      <p class="eyebrow"><span class="bar"></span>Fresh start</p>
+      <h3 id="resetTitle">Clear draw results</h3>
+      <div class="segmented wide" id="resetScope">
+        <button data-v="category" class="on">Selected chitty</button>
+        <button data-v="all">All chitties</button>
+      </div>
+      <div class="reset-warn">
+        <b id="resetHeadline"></b>
+        <ul id="resetEffects"></ul>
+      </div>
+      <label class="label" for="resetConfirm" style="margin:4px 0 0">Type <strong>RESET</strong> to confirm</label>
+      <input type="text" id="resetConfirm" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" placeholder="RESET">
+      <p class="form-error" id="resetError"></p>
+      <div class="modal-actions">
+        <button class="btn ghost" id="resetCancel">Cancel</button>
+        <button class="btn danger" id="resetGo" disabled>Reset draws</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recording setup -->
+  <div class="overlay" id="recModal" hidden>
+    <div class="sheet modal rec-setup" role="dialog" aria-modal="true" aria-labelledby="recSetupTitle">
+      <p class="eyebrow"><span class="bar"></span>Recording</p>
+      <h3 id="recSetupTitle">Record live draw</h3>
+      <div class="segmented wide" id="recMode">
+        <button data-v="studio" class="on">Studio</button>
+        <button data-v="screen">Screen</button>
+      </div>
+      <p class="muted sm" id="recModeHelp"></p>
+      <div class="opts">
+        <div class="opt" id="optSystemRow"><div><b>Tab / system audio</b><span>Include sound from the shared tab or screen, where the browser allows.</span></div><button class="switch" role="switch" data-opt="systemAudio" aria-checked="true"></button></div>
+        <div class="opt"><div><b>Microphone</b><span>Add your voice commentary. The browser will ask for microphone permission.</span></div><button class="switch" role="switch" data-opt="mic" aria-checked="false"></button></div>
+        <div class="opt"><div><b>Auto-record on spin</b><span>Start recording automatically when you press START SPIN.</span></div><button class="switch" role="switch" data-opt="autoRecord" aria-checked="false"></button></div>
+        <div class="opt"><div><b>Auto-stop when cycle completes</b><span>Stop and save once every participant in the category has won.</span></div><button class="switch" role="switch" data-opt="autoStop" aria-checked="true"></button></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn ghost" id="recCancel">Close</button>
+        <button class="btn danger" id="recStart">Start recording</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recording preview -->
+  <div class="overlay" id="previewModal" hidden>
+    <div class="sheet preview" role="dialog" aria-modal="true" aria-labelledby="previewTitle">
+      <div class="preview-head">
+        <div>
+          <p class="eyebrow"><span class="bar"></span>Recording</p>
+          <h3 id="previewTitle"></h3>
+          <p class="muted sm" id="previewMeta"></p>
+        </div>
+        <button class="icon-btn" id="previewClose" aria-label="Close preview"><svg viewBox="0 0 24 24" class="ico"><path d="M6 6l12 12M18 6L6 18" fill="none"/></svg></button>
+      </div>
+      <video id="previewVideo" controls playsinline preload="metadata"></video>
+      <div class="preview-actions">
+        <a class="btn primary" id="previewDownload">Download</a>
+        <button class="btn" id="previewCopy">Copy link</button>
+        <button class="btn wa" id="previewWa">WhatsApp</button>
+        <button class="btn ghost" id="previewNewLink">Reset link</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+
+  <script src="/app.js"></script>
+  <script src="/recorder.js"></script>
+  <script src="/share.js"></script>
+</body>
+</html>

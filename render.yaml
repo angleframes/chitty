@@ -1,0 +1,18 @@
+# One-click deploy on Render (Blueprint). Needs a paid instance for the persistent disk.
+services:
+  - type: web
+    name: angleframes-chitty
+    runtime: docker
+    plan: starter
+    healthCheckPath: /api/state
+    disk:
+      name: chitty-data
+      mountPath: /data
+      sizeGB: 5
+    envVars:
+      - key: DATA_DIR
+        value: /data
+      - key: ADMIN_PIN
+        sync: false        # set a strong PIN in the Render dashboard
+      - key: PUBLIC_URL
+        sync: false        # e.g. https://angleframes-chitty.onrender.com
