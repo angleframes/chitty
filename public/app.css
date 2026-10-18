@@ -622,3 +622,7 @@ kbd { font-family: var(--font); font-size: 10.5px; padding: 1px 5px; border-radi
   .mini-stats b { font-size: 20px; }
 }
 @media (hover: none) { .kbd-tip { display: none; } }
+
+/* Browser-only build (GitHub Pages): no server links to copy or reset — recordings are shared as files. */
+.static-mode #previewCopy, .static-mode #previewNewLink,
+.static-mode .rec-actions [data-act="copy"], .static-mode #recLinkWarn { display: none !important; }

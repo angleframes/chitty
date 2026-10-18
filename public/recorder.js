@@ -619,7 +619,9 @@
 
   const baseUrl = () => publicUrl || location.origin;
   const shareUrl = (r) => `${baseUrl()}/r/${r.token}`;
-  const mediaUrl = (r, dl) => `/media/${r.token}.${r.ext}${dl ? '?download=1' : ''}`;
+  // Browser-only (GitHub Pages) builds serve recordings from the device via window.AFC_MEDIA.
+  const mediaUrl = (r, dl) => window.AFC_MEDIA?.(r, dl) ?? `/media/${r.token}.${r.ext}${dl ? '?download=1' : ''}`;
+  const fileNameOf = (r) => `AngleFrames-Chitty_${r.categoryName.replace(/[^\w]+/g, '-').replace(/^-|-$/g, '')}_${r.dateIst}_${r.id}.${r.ext}`;
   const playable = (r) => r.status === 'ready' || r.status === 'interrupted';
   const titleOf = (r) => r.categoryNames.join(', ');
   const fmtDay = (iso) => A.fmtDate.format(new Date(`${iso}T12:00:00+05:30`));
@@ -704,9 +706,25 @@
     const a = document.createElement('a');
     a.href = mediaUrl(r, true);
     a.rel = 'noopener';
+    if (window.AFC_STATIC) a.download = fileNameOf(r);
     document.body.append(a); a.click(); a.remove();
   }
+  // Browser-only build: there is no server link to share, so share the video file itself.
+  async function shareVideoFile(r) {
+    const blob = await window.AFC_MEDIA_BLOB?.(r);
+    if (!blob) return A.toast('Recording file not found on this device', 'error');
+    const file = new File([blob], fileNameOf(r), { type: blob.type || 'video/mp4' });
+    try {
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: 'ANGLE FRAMES CHITTY — Live draw recording' });
+        return;
+      }
+    } catch (e) { if (e.name === 'AbortError') return; }
+    download(r);
+    A.toast('Video downloaded — attach it in your WhatsApp group.');
+  }
   function whatsapp(r) {
+    if (window.AFC_STATIC) return shareVideoFile(r);
     const when = A.fmtDate.format(new Date(r.startedAt));
     const text = `ANGLE FRAMES CHITTY — Live draw recording\n${titleOf(r)} · ${when}\n${shareUrl(r)}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
@@ -744,6 +762,7 @@
     const src = mediaUrl(r);
     if (v.getAttribute('src') !== src) v.setAttribute('src', src);
     $('#previewDownload').href = mediaUrl(r, true);
+    if (window.AFC_STATIC) $('#previewDownload').download = fileNameOf(r);
   }
   function openPreview(r) {
     current = r;

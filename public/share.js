@@ -84,7 +84,7 @@
     const img = new Image();
     img.onload = () => res(img);
     img.onerror = () => res(null);
-    img.src = '/logo.png';
+    img.src = 'logo.png';
   }));
 
   async function drawReport(r) {

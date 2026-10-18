@@ -19,6 +19,29 @@ Open <http://localhost:3000>. To use a different port, run `PORT=8080 npm start`
 
 Anyone with the URL can **watch** the draw live. Only a signed-in admin can spin, manage categories and participants, or start a new draw cycle.
 
+## GitHub Pages version (no server)
+
+**https://angleframes.github.io/chitty/** runs the same app with no server. It's built into `docs/` by `node scripts/build-pages.mjs`. `public/local-backend.js` answers every `/api/*` request inside the browser:
+
+- **Data:** categories, participants, cycles and winners are kept in this browser's `localStorage`. Changes from several tabs are applied one at a time (Web Locks), so overlapping spins are rejected.
+- **Winner selection:** `crypto.getRandomValues`, unbiased. The pointer still lands on the recorded winner.
+- **Live sync:** tabs and windows of the **same browser** stay in sync (BroadcastChannel), for example an admin tab plus a projector window.
+- **Recordings:** stored in IndexedDB on the device. Download them, or share the video file to WhatsApp.
+- **Admin PIN:** set on the first sign-in on each device, and saved only as a hash.
+
+**Limits compared with the server version:**
+- Each device or browser has its own separate data, and other phones don't see the draw live.
+- There are no recording share links.
+- Clearing the browser's site data erases everything.
+
+Use the Node server version (above) for multi-screen live draws with one shared database.
+
+Rebuild after changing `public/`:
+
+```bash
+node scripts/build-pages.mjs
+```
+
 ## How it works
 
 | Concern | Implementation |
