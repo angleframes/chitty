@@ -93,6 +93,15 @@
   const deliver = (event) => { for (const l of listeners) l(event); };
   channel?.addEventListener('message', (e) => deliver(e.data));
   function broadcast(event) { channel?.postMessage(event); setTimeout(() => deliver(event), 0); }
+  // Hooks for public/sheet-backend.js (Google Sheet mode): live events and recording access.
+  window.AFC_LOCAL = {
+    broadcast: (event) => broadcast(event),
+    grantSession(token, ttlMs) {
+      const s = sessions(); s[token] = Date.now() + ttlMs; ls.set(SESS_KEY, JSON.stringify(s));
+    },
+    revokeSession(token) { const s = sessions(); delete s[token]; ls.set(SESS_KEY, JSON.stringify(s)); },
+  };
+
   function scheduleReveal(categoryId, revealAt) {
     setTimeout(() => broadcast({ type: 'revealed', categoryId }), Math.max(0, revealAt - Date.now()) + 50);
   }

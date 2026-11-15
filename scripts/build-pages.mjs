@@ -9,14 +9,17 @@ const out = join(root, 'docs');
 const keep = join(out, 'legacy'); // the previous single-page app lives here; never touched
 
 mkdirSync(out, { recursive: true });
-for (const f of ['index.html', 'app.css', 'app.js', 'recorder.js', 'share.js', 'local-backend.js', 'logo.png', 'logo-mark.png']) {
+for (const f of ['index.html', 'app.css', 'app.js', 'recorder.js', 'share.js', 'local-backend.js', 'sheet-backend.js', 'logo.png', 'logo-mark.png']) {
   cpSync(join(root, 'public', f), join(out, f));
 }
 const html = join(out, 'index.html');
 let s = readFileSync(html, 'utf8');
 if (!s.includes('local-backend.js')) {
-  s = s.replace('<script src="app.js"></script>', '<script src="local-backend.js"></script>\n  <script src="app.js"></script>');
+  s = s.replace('<script src="app.js"></script>',
+    '<script src="sheet-config.js"></script>\n  <script src="local-backend.js"></script>\n  <script src="sheet-backend.js"></script>\n  <script src="app.js"></script>');
 }
+// Keep an existing docs/sheet-config.js (it holds the deployed Apps Script URL); seed it once.
+if (!existsSync(join(out, 'sheet-config.js'))) cpSync(join(root, 'public', 'sheet-config.js'), join(out, 'sheet-config.js'));
 writeFileSync(html, s);
 writeFileSync(join(out, '.nojekyll'), '');
 console.log(`Built docs/ for GitHub Pages${existsSync(keep) ? ' (legacy/ kept)' : ''}`);

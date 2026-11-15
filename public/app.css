@@ -626,3 +626,18 @@ kbd { font-family: var(--font); font-size: 10.5px; padding: 1px 5px; border-radi
 /* Browser-only build (GitHub Pages): no server links to copy or reset — recordings are shared as files. */
 .static-mode #previewCopy, .static-mode #previewNewLink,
 .static-mode .rec-actions [data-act="copy"], .static-mode #recLinkWarn { display: none !important; }
+
+/* Google Sheet mode: participants and winners are managed in the sheet. */
+.sheet-mode [data-panel="participants"] .mini-stats + .block,
+.sheet-mode .p-row .p-actions,
+.sheet-mode [data-panel="categories"] .block:first-child,
+.sheet-mode #catList .p-actions,
+.sheet-mode .block.fresh { display: none !important; }
+.sheet-note { margin: 0 0 14px; padding: 10px 14px; border-radius: 12px; font-size: 12.5px; line-height: 1.5;
+  color: var(--muted); background: var(--surface); border: 1px solid var(--line); }
+.sheet-bar { display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px; border-radius: 999px;
+  border: 1px solid rgba(74, 222, 128, .35); background: transparent; color: var(--green); font-size: 11.5px; cursor: pointer; }
+.sheet-bar i { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.sheet-bar.busy { opacity: .6; pointer-events: none; }
+.sheet-bar.err { color: #ff8d92; border-color: rgba(179, 20, 27, .5); max-width: 420px; }
+.sheet-bar.err span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
