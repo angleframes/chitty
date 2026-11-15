@@ -284,8 +284,8 @@
   const fctx = face.getContext('2d');
   let wheelNames = [];
   let px = 0;
-  // Brand palette: charcoal, graphite, Angle Frames red.
-  const COLORS = ['#151515', '#262626', '#88090c'];
+  // Neutral segments only: red on the wheel looked like "winner". Red stays for the pointer and button.
+  const COLORS = ['#141414', '#2a2a2a', '#3f3f3f'];
 
   function segColor(i, n) {
     if (n === 1) return COLORS[1];
