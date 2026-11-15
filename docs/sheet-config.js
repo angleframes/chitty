@@ -1,3 +1,2 @@
-// Google Sheet live draw: paste the Apps Script web-app URL (ends in /exec) between the quotes.
-// Leave empty to run the app in browser-only mode. See apps-script/README.md.
-window.AFC_SHEET_API = '';
+// Google Sheet live draw: Apps Script web-app URL (see apps-script/README.md).
+window.AFC_SHEET_API = 'https://script.google.com/macros/s/AKfycbz65UtaGy-AtWBzGUSidyTpUsVItZYcrjZXHpp0JZrjY_jou3fkX75b2sQ_-H38mK8/exec';
